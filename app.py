@@ -1,35 +1,52 @@
-#include <DHT.h>
+import streamlit as st
+import pandas as pd
 
-#define DHTPIN 2
-#define DHTTYPE DHT22
-#define LEDPIN 8
 
-DHT dht(DHTPIN, DHTTYPE);
+st.title("Smart Temperature Monitoring System")
 
-void setup() {
-  Serial.begin(9600);
-  dht.begin();
-  pinMode(LEDPIN, OUTPUT);
-}
+st.write("Arduino Uno + DHT22 Sensor Simulation")
 
-void loop() {
-  float temperature = dht.readTemperature();
+st.subheader("Temperature Monitor")
 
-  if (isnan(temperature)) {
-    Serial.println("Sensor error");
-    delay(2000);
-    return;
-  }
+temperature = st.slider(
+    "Adjust Temperature (°C)",
+    min_value=20,
+    max_value=50,
+    value=24
+)
 
-  Serial.print("Temperature: ");
-  Serial.print(temperature);
-  Serial.println(" C");
+st.metric("Temperature", f"{temperature} °C")
 
-  if (temperature >= 35) {
-    digitalWrite(LEDPIN, HIGH);
-  } else {
-    digitalWrite(LEDPIN, LOW);
-  }
+if temperature >= 40:
+    st.error("WARNING! High Temperature")
+    st.write("Red LED: ON")
+else:
+    st.success("Normal Temperature")
+    st.write("Red LED: OFF")
 
-  delay(2000);
-}
+st.subheader("Wokwi Temperature Test Results")
+
+data = pd.DataFrame({
+    "Temperature": [24, 30, 35, 39, 40, 42, 45],
+    "LED Status": [
+        "OFF", "OFF", "OFF", "OFF",
+        "ON", "ON", "ON"
+    ]
+})
+
+st.dataframe(data)
+
+st.subheader("Temperature Graph")
+
+st.line_chart(
+    data,
+    y="Temperature"
+)
+
+st.subheader("Interpretation")
+
+st.write(
+    "The warning LED turns ON when the "
+    "temperature reaches 40°C or higher. "
+    "Below 40°C, the LED remains OFF."
+)
